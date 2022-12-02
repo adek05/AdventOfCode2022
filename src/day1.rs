@@ -10,16 +10,19 @@ where P: AsRef<Path>, {
 
 pub fn run() {
     let lines = read_lines("in/day1.in").unwrap();
-    let mut max = 0;
+    let mut elves = vec![];
     let mut cur = 0;
     for line in lines {
         let l = line.unwrap();
         if l.is_empty() {
-            max = std::cmp::max(max, cur);
+            elves.push(cur);
             cur = 0;
         } else {
             cur += str::parse::<i64>(&l).unwrap();
         }
     }
-    println!("Day 1.a: {}", max);
+    elves.sort();
+    elves.reverse();
+    println!("Day 1.a: {}", elves[0]);
+    println!("Day 1.b: {}", elves[0..3].iter().sum::<i64>());
 }
