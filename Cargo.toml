@@ -7,3 +7,7 @@ edition = "2021"
 
 [dependencies]
 scan-rules = "0.2.0"
+
+[lib]
+name='aoc'
+path='src/lib.rs'
