@@ -7,8 +7,8 @@ use std::collections::HashSet;
 /// ```
 pub fn priority(c: char) -> u32 {
     match c {
-        c if c >= 'a' && c <= 'z' => 1 + c as u32 - 'a' as u32,
-        c if c >= 'A' && c <= 'Z' => 27 + c as u32 - 'A' as u32,
+        c if ('a'..='z').contains(&c) => 1 + c as u32 - 'a' as u32,
+        c if ('A'..='Z').contains(&c) => 27 + c as u32 - 'A' as u32,
         _ => panic!("Non-digit ASCII char given: {}", c),
     }
 }
@@ -34,7 +34,7 @@ pub fn run() {
     }
     println!(
         "Day 3.1: {}",
-        rucksacks.iter().map(|x| find_bad_item(&x)).sum::<u32>()
+        rucksacks.iter().map(|x| find_bad_item(x)).sum::<u32>()
     );
 
     let groups = rucksacks.chunks(3);
@@ -43,8 +43,8 @@ pub fn run() {
     for group in groups {
         priorities_of_groups.push(
             *group
-                .to_owned()
-                .into_iter()
+                .iter()
+                .cloned()
                 .map(|rucksack| -> HashSet<u32> { HashSet::from_iter(rucksack) })
                 .reduce(|acc, elem| acc.intersection(&elem).into_iter().cloned().collect())
                 .unwrap()

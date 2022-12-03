@@ -79,7 +79,7 @@ pub fn run() {
     for line in lines {
         let l = line.unwrap();
 
-        let opponent = Symbol::parse(l.chars().nth(0).unwrap());
+        let opponent = Symbol::parse(l.chars().next().unwrap());
         let me = Symbol::parse(l.chars().nth(2).unwrap());
         let expected_result = Result::parse(l.chars().nth(2).unwrap());
 
@@ -87,7 +87,7 @@ pub fn run() {
 
         for me in &options {
             if me.cmp(&opponent) == expected_result {
-                score_part_2 += score_round(&opponent, &me);
+                score_part_2 += score_round(&opponent, me);
             }
         }
 
