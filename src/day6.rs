@@ -9,13 +9,14 @@ use std::collections::HashSet;
 /// assert_eq!(part1(Vec::from_iter("mjqjpqmgbljsphdztnvjfqwrcgsmlb".chars()), 14), 19);
 /// ```
 pub fn part1(communication: Vec<char>, window_size: usize) -> usize {
-    let mut first_match = communication
-        .windows(window_size)
-        .enumerate()
-        .filter(|(idx, window)| {
-            let s: HashSet<&char> = HashSet::from_iter(*window);
-            return s.len() == window_size;
-        });
+    let mut first_match =
+        communication
+            .windows(window_size)
+            .enumerate()
+            .filter(|(_idx, window)| {
+                let s: HashSet<&char> = HashSet::from_iter(*window);
+                return s.len() == window_size;
+            });
     first_match.nth(0).unwrap().0 + window_size
 }
 

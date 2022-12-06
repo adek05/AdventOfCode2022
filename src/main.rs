@@ -4,5 +4,6 @@ fn main() {
     // aoc::day3::run();
     // aoc::day4::run();
     // aoc::day5::run();
-    aoc::day6::run();
+    // aoc::day6::run();
+    aoc::day7::run();
 }
