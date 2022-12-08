@@ -2,17 +2,16 @@ use crate::utils::read_lines;
 
 pub fn run() {
     let lines = read_lines("in/day1.in").unwrap();
-    let mut elves = vec![];
-    let mut cur = 0;
-    for line in lines {
-        let l = line.unwrap();
-        if l.is_empty() {
-            elves.push(cur);
-            cur = 0;
-        } else {
-            cur += str::parse::<i64>(&l).unwrap();
-        }
-    }
+
+    let mut elves: Vec<i64> = Vec::from_iter(lines)
+        .split(|line| line.as_ref().unwrap().is_empty())
+        .map(|x| {
+            x.iter()
+                .map(|l| str::parse::<i64>(&l.as_ref().unwrap()).unwrap())
+                .sum::<i64>()
+        })
+        .collect();
+
     elves.sort();
     elves.reverse();
     println!("Day 1.a: {}", elves[0]);
