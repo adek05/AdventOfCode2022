@@ -11,9 +11,7 @@ fn part1(mut crates: HashMap<u32, Vec<char>>, instructions: &[Move]) -> HashMap<
     for instruction in instructions {
         let mut from = crates.get(&instruction.from).unwrap().clone();
         let mut to = crates.get(&instruction.to).unwrap().clone();
-        for _ in 0..instruction.how_many {
-            to.push(from.pop().unwrap());
-        }
+        to.extend(from.drain(from.len() - instruction.how_many..).rev());
         crates.insert(instruction.from, from);
         crates.insert(instruction.to, to);
     }
@@ -22,13 +20,15 @@ fn part1(mut crates: HashMap<u32, Vec<char>>, instructions: &[Move]) -> HashMap<
 
 fn part2(mut crates: HashMap<u32, Vec<char>>, instructions: &[Move]) -> HashMap<u32, Vec<char>> {
     for instruction in instructions {
-        let mut from = crates.get(&instruction.from).unwrap().clone();
-        let mut to = crates.get(&instruction.to).unwrap().clone();
+        {
+            // TODO: Improve with split_at_mut to avoid clone in the line below.
+            let from = crates.get(&instruction.from).unwrap().clone();
+            let to = crates.get_mut(&instruction.to).unwrap();
+            to.extend(&from[from.len() - instruction.how_many..from.len()]);
+        }
 
-        to.extend(&from[from.len() - instruction.how_many..from.len()]);
-        from = from[0..from.len() - instruction.how_many].to_vec();
-        crates.insert(instruction.from, from);
-        crates.insert(instruction.to, to);
+        let from = crates.get_mut(&instruction.from).unwrap();
+        from.truncate(from.len() - instruction.how_many);
     }
     crates
 }
