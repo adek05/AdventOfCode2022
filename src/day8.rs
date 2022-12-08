@@ -99,18 +99,6 @@ pub fn run() {
             &mut visibility,
         );
     }
-    // for x in 0..xsize {
-    //     let mut prev = grid[x][xsize-1];
-    //     visibility[x][0] = true;
-    //     for y in 1..ysize {
-    //         if grid[x][y] > prev {
-    //             visibility[x][y] = true;
-    //             prev = grid[x][y]
-    //         } else {
-    //             break;
-    //         }
-    //     }
-    // }
 
     let mut cnt = 0;
     for x in 0..xsize {
@@ -120,7 +108,6 @@ pub fn run() {
             }
         }
     }
-    // dbg!(&visibility);
     println!("Day 8, part 1 {}", cnt);
 
     let mut max_score = 0;
