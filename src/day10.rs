@@ -3,7 +3,6 @@ use crate::utils::read_lines;
 pub fn run() {
     let lines = read_lines("in/day10.in").unwrap();
     let mut register = 1;
-    let mut clock = 1;
 
     let mut register_values = vec![];
     register_values.push(1);
@@ -13,13 +12,11 @@ pub fn run() {
         scan!(&l;
           ("noop") => {
             register_values.push(register);
-            clock+=1;
           },
           ("addx", let delta: i32) => {
             register_values.push(register);
             register_values.push(register);
             register += delta;
-            clock+=2;
           },
         )
         .unwrap();
@@ -41,6 +38,6 @@ pub fn run() {
                 print!(".");
             }
         }
-        println!("");
+        println!();
     }
 }

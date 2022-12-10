@@ -62,7 +62,7 @@ pub fn run() {
     for line in lines {
         let l = line.unwrap();
         grid.push(l.chars().map(|c| c.to_digit(10).unwrap()).collect());
-        visibility.push(l.chars().map(|c| false).collect());
+        visibility.push(l.chars().map(|_| false).collect());
     }
     let xsize = grid[0].len();
     let ysize = grid.len();
