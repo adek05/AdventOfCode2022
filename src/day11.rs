@@ -1,6 +1,6 @@
 use crate::utils::read_lines;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Op {
     Add(u64),
     Mul(u64),
@@ -25,7 +25,7 @@ pub fn reduce_worry_level_2(modulo: u64, level: u64) -> u64 {
     level % modulo
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct Monkey {
     pub items: Vec<u64>,
     pub op: Op,
@@ -33,6 +33,38 @@ struct Monkey {
     pub throw_to_if_true: usize,
     pub throw_to_if_false: usize,
     pub inspection_count: usize,
+}
+
+fn simulate(mut monkeys: Vec<Monkey>, reduce_worry_level: Box<dyn Fn(u64) -> u64>, iter_count: u32) -> u64 {
+    for _ in 0..iter_count {
+        for i in 0..monkeys.len() {
+            monkeys[i].inspection_count += monkeys[i].items.len();
+
+            let mut what_to_which = vec![];
+            for item in &monkeys[i].items {
+                let new_worry_level = reduce_worry_level(monkeys[i].op.eval(*item));
+                if new_worry_level % monkeys[i].test_divisble_by == 0 {
+                    what_to_which.push((new_worry_level, monkeys[i].throw_to_if_true));
+                } else {
+                    what_to_which.push((new_worry_level, monkeys[i].throw_to_if_false));
+                }
+            }
+
+            monkeys[i].items = vec![];
+            for (what, to_which) in what_to_which {
+                monkeys[to_which].items.push(what);
+            }
+        }
+    }
+
+
+    let mut business = monkeys
+        .iter()
+        .map(|x| x.inspection_count)
+        .collect::<Vec<usize>>();
+    business.sort();
+    business.reverse();
+    business[0] * business[1]
 }
 
 pub fn run() {
@@ -89,11 +121,6 @@ pub fn run() {
         }
     }
 
-    let mut business = monkeys
-        .iter()
-        .map(|x| x.inspection_count)
-        .collect::<Vec<usize>>();
-    business.sort();
-    business.reverse();
-    println!("Day 11, part 1 {}", business[0] * business[1]);
+    println!("Day 11, part 1 {}", simulate(monkeys.clone(), Box::new(reduce_worry_level), 20));
+    println!("Day 11, part 2 {}", simulate(monkeys.clone(), Box::new(move |x| x % modulo), 10_000));
 }
