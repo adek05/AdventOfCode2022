@@ -7,7 +7,7 @@ pub fn run() {
         .split(|line| line.as_ref().unwrap().is_empty())
         .map(|x| {
             x.iter()
-                .map(|l| str::parse::<i64>(&l.as_ref().unwrap()).unwrap())
+                .map(|l| str::parse::<i64>(l.as_ref().unwrap()).unwrap())
                 .sum::<i64>()
         })
         .collect();

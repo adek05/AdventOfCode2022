@@ -32,7 +32,7 @@ pub fn find_tail_position(head_pos: (i32, i32), tail_pos: (i32, i32)) -> (i32, i
     if (head_pos.0 - tail_pos.0).abs() <= 1 && (head_pos.1 - tail_pos.1).abs() <= 1 {
         return tail_pos;
     }
-    let res = [
+    [
         (1, 1),
         (1, -1),
         (-1, -1),
@@ -51,9 +51,8 @@ pub fn find_tail_position(head_pos: (i32, i32), tail_pos: (i32, i32)) -> (i32, i
     })
     .filter(|x| x.0 != 0)
     .min()
-    .unwrap();
-
-    return res.1;
+    .unwrap()
+    .1
 }
 
 pub fn run() {
@@ -62,12 +61,15 @@ pub fn run() {
     let mut steps = vec![];
     for line in lines {
         let l = line.unwrap();
-        steps.push(scan!(&l; 
-            ("U", let distance: u32) => HeadMove{direction: Direction::Up, distance: distance},
-            ("D", let distance: u32) => HeadMove{direction: Direction::Down, distance: distance},
-            ("L", let distance: u32) => HeadMove{direction: Direction::Left, distance: distance},
-            ("R", let distance: u32) => HeadMove{direction: Direction::Right, distance: distance},
-        ).unwrap());
+        steps.push(
+            scan!(&l;
+                ("U", let distance: u32) => HeadMove{direction: Direction::Up, distance},
+                ("D", let distance: u32) => HeadMove{direction: Direction::Down, distance},
+                ("L", let distance: u32) => HeadMove{direction: Direction::Left, distance},
+                ("R", let distance: u32) => HeadMove{direction: Direction::Right, distance},
+            )
+            .unwrap(),
+        );
     }
 
     let mut head_position = (0, 0);

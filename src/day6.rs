@@ -15,9 +15,9 @@ pub fn part1(communication: Vec<char>, window_size: usize) -> usize {
             .enumerate()
             .filter(|(_idx, window)| {
                 let s: HashSet<&char> = HashSet::from_iter(*window);
-                return s.len() == window_size;
+                s.len() == window_size
             });
-    first_match.nth(0).unwrap().0 + window_size
+    first_match.next().unwrap().0 + window_size
 }
 
 pub fn run() {
@@ -29,13 +29,6 @@ pub fn run() {
         .chars()
         .collect::<Vec<char>>();
 
-    // let mut first_match = communication
-    //     .windows(4)
-    //     .enumerate()
-    //     .filter(|(idx, window)| {
-    //         let s: HashSet<&char> = HashSet::from_iter(*window);
-    //         return s.len() == 4;
-    //     });
     println!("Day 6, part 1: {}", part1(communication.clone(), 4));
-    println!("Day 6, part 2: {}", part1(communication.clone(), 14));
+    println!("Day 6, part 2: {}", part1(communication, 14));
 }

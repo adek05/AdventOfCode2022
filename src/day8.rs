@@ -12,8 +12,8 @@ pub fn bfs(
     start: (i32, i32),
     dimensions: (usize, usize),
     direction: (i32, i32),
-    grid: &Vec<Vec<u32>>,
-    visibility: &mut Vec<Vec<bool>>,
+    grid: &[Vec<u32>],
+    visibility: &mut [Vec<bool>],
 ) {
     let mut tree_loc = start;
     visibility[tree_loc.0 as usize][tree_loc.1 as usize] = true;
@@ -31,7 +31,7 @@ pub fn bfs(
     }
 }
 
-pub fn bfs_2(start: (i32, i32), dimensions: (usize, usize), grid: &Vec<Vec<u32>>) -> i32 {
+pub fn bfs_2(start: (i32, i32), dimensions: (usize, usize), grid: &[Vec<u32>]) -> i32 {
     let mut total_score = 1;
     for direction in [(0, 1), (1, 0), (-1, 0), (0, -1)] {
         let mut score = 0;
@@ -50,7 +50,7 @@ pub fn bfs_2(start: (i32, i32), dimensions: (usize, usize), grid: &Vec<Vec<u32>>
                 break;
             }
         }
-        total_score = total_score * score;
+        total_score *= score;
     }
     total_score
 }
@@ -100,14 +100,10 @@ pub fn run() {
         );
     }
 
-    let mut cnt = 0;
-    for x in 0..xsize {
-        for y in 0..ysize {
-            if visibility[x][y] == true {
-                cnt += 1;
-            }
-        }
-    }
+    let cnt: u32 = visibility
+        .iter()
+        .map(|x| x.iter().map(|x| *x as u32).sum::<u32>())
+        .sum();
     println!("Day 8, part 1 {}", cnt);
 
     let mut max_score = 0;
