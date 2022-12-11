@@ -21,9 +21,7 @@ pub fn reduce_worry_level(level: u64) -> u64 {
     level / 1
 }
 
-pub fn reduce_worry_level_2(
-    modulo: u64,
-    level: u64) -> u64 {
+pub fn reduce_worry_level_2(modulo: u64, level: u64) -> u64 {
     level % modulo
 }
 
@@ -43,7 +41,7 @@ pub fn run() {
         .map(|x| x.unwrap())
         .collect::<Vec<String>>();
 
-        let mut modulo = 1;
+    let mut modulo = 1;
     let mut monkeys: Vec<Monkey> = 
     lines.split(|l| l.is_empty()).into_iter().map(|monkey_lines| {
         let mut monkey_line = monkey_lines.iter();
@@ -70,7 +68,6 @@ pub fn run() {
         Monkey { items: monkey_items, op: op, test_divisble_by: divisible_by, throw_to_if_true: true_throw, throw_to_if_false: false_throw , inspection_count: 0}
     }).collect();
 
-
     for _ in 0..10000 {
         for i in 0..monkeys.len() {
             monkeys[i].inspection_count += monkeys[i].items.len();
@@ -79,9 +76,9 @@ pub fn run() {
             for item in &monkeys[i].items {
                 let new_worry_level = reduce_worry_level_2(modulo, monkeys[i].op.eval(*item));
                 if new_worry_level % monkeys[i].test_divisble_by == 0 {
-                    what_to_which.push((new_worry_level,monkeys[i].throw_to_if_true));
-                } else  {
-                    what_to_which.push( ( new_worry_level, monkeys[i].throw_to_if_false));
+                    what_to_which.push((new_worry_level, monkeys[i].throw_to_if_true));
+                } else {
+                    what_to_which.push((new_worry_level, monkeys[i].throw_to_if_false));
                 }
             }
 
@@ -92,9 +89,10 @@ pub fn run() {
         }
     }
 
-
-    // dbg!(monkeys);
-    let mut business = monkeys.iter().map(|x| x.inspection_count).collect::<Vec<usize>>();
+    let mut business = monkeys
+        .iter()
+        .map(|x| x.inspection_count)
+        .collect::<Vec<usize>>();
     business.sort();
     business.reverse();
     println!("Day 11, part 1 {}", business[0] * business[1]);

@@ -14,7 +14,7 @@ impl Symbol {
             (Symbol::Rock, Symbol::Paper) => Result::Loss,
             (Symbol::Paper, Symbol::Scissors) => Result::Loss,
             (Symbol::Scissors, Symbol::Rock) => Result::Loss,
-            _ => Result::Win
+            _ => Result::Win,
         }
     }
 
@@ -65,7 +65,6 @@ impl Result {
     }
 }
 
-
 fn score_round(opponent: &Symbol, me: &Symbol) -> i32 {
     me.cmp(opponent).value() + me.value()
 }
@@ -90,10 +89,8 @@ pub fn run() {
                 score_part_2 += score_round(&opponent, me);
             }
         }
-
     }
 
     println!("Day 2.a: {}", score_part_1);
     println!("Day 2.b: {}", score_part_2);
-    
 }

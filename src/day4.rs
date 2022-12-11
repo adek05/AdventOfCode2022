@@ -22,9 +22,9 @@ fn contains_impl(r1: &Elf, r2: &Elf) -> bool {
 }
 
 pub fn overlaps(r1: &Elf, r2: &Elf) -> bool {
-    r1.start <= r2.start && r2.start <= r1.end ||
-    r2.start <= r1.start && r1.start <= r2.end ||
-    contains(r1, r2)
+    r1.start <= r2.start && r2.start <= r1.end
+        || r2.start <= r1.start && r1.start <= r2.end
+        || contains(r1, r2)
 }
 
 pub fn run() {
@@ -44,7 +44,8 @@ pub fn run() {
             if overlaps(&pair1, &pair2) {
                 overlap_pairs += 1;
             }
-        }).unwrap();
+        })
+        .unwrap();
     }
 
     println!("Day 4, part 1: {}", fully_contains_pairs);

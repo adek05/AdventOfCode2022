@@ -1,10 +1,12 @@
-use std::collections::HashSet;
 use crate::utils::read_lines;
-
+use std::collections::HashSet;
 
 #[derive(Debug)]
 pub enum Direction {
-    Up, Down, Left, Right
+    Up,
+    Down,
+    Left,
+    Right,
 }
 
 #[derive(Debug)]
@@ -39,15 +41,17 @@ pub fn find_tail_position(head_pos: (i32, i32), tail_pos: (i32, i32)) -> (i32, i
         (1, 0),
         (0, -1),
         (-1, 0),
-    ].iter().map(|step| {
+    ]
+    .iter()
+    .map(|step| {
         let new_tail_pos = (tail_pos.0 + step.0, tail_pos.1 + step.1);
-        let head_dist = 
-        (head_pos.0 - new_tail_pos.0) * (head_pos.0 - new_tail_pos.0) + 
-        (head_pos.1 - new_tail_pos.1) * (head_pos.1 - new_tail_pos.1);
+        let head_dist = (head_pos.0 - new_tail_pos.0) * (head_pos.0 - new_tail_pos.0)
+            + (head_pos.1 - new_tail_pos.1) * (head_pos.1 - new_tail_pos.1);
         (head_dist, new_tail_pos)
     })
-    .filter(|x| x.0 != 0 )
-    .min().unwrap();
+    .filter(|x| x.0 != 0)
+    .min()
+    .unwrap();
 
     return res.1;
 }
@@ -66,11 +70,10 @@ pub fn run() {
         ).unwrap());
     }
 
-
-    let mut head_position = (0,0);
+    let mut head_position = (0, 0);
     let mut tail_position = vec![(0, 0); 1];
     let mut visited_positions = HashSet::new();
-    visited_positions.insert((0,0));
+    visited_positions.insert((0, 0));
 
     for step in steps {
         for _ in 0..step.distance {
@@ -79,7 +82,10 @@ pub fn run() {
             for idx in 0..tail_position.len() {
                 let tail_pos = tail_position[idx];
                 tail_position[idx] = find_tail_position(tmp_head_position, tail_pos);
-                assert!((tmp_head_position.0 - tail_position[idx].0).abs() <= 1 && (tmp_head_position.1 - tail_position[idx].1).abs() <= 1);
+                assert!(
+                    (tmp_head_position.0 - tail_position[idx].0).abs() <= 1
+                        && (tmp_head_position.1 - tail_position[idx].1).abs() <= 1
+                );
                 tmp_head_position = tail_position[idx];
             }
             visited_positions.insert(tmp_head_position);
