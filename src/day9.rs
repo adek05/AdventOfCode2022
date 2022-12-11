@@ -81,14 +81,14 @@ pub fn run() {
         for _ in 0..step.distance {
             head_position = move_head(head_position, &step);
             let mut tmp_head_position = head_position;
-            for idx in 0..tail_position.len() {
-                let tail_pos = tail_position[idx];
-                tail_position[idx] = find_tail_position(tmp_head_position, tail_pos);
+            for tail_pos in &mut tail_position {
+                // let tail_pos = tail_position[idx];
+                *tail_pos = find_tail_position(tmp_head_position, *tail_pos);
                 assert!(
-                    (tmp_head_position.0 - tail_position[idx].0).abs() <= 1
-                        && (tmp_head_position.1 - tail_position[idx].1).abs() <= 1
+                    (tmp_head_position.0 - tail_pos.0).abs() <= 1
+                        && (tmp_head_position.1 - tail_pos.1).abs() <= 1
                 );
-                tmp_head_position = tail_position[idx];
+                tmp_head_position = *tail_pos;
             }
             visited_positions.insert(tmp_head_position);
         }
