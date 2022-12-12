@@ -23,11 +23,8 @@ fn bfs(
         if visited.contains(&loc) {
             continue;
         }
-        visited.insert(loc.clone());
+        visited.insert(loc);
 
-        // if loc == end {
-        //     return distance;
-        // }
         let current_height = grid[loc.0][loc.1];
         if current_height as char == dest_height {
             return distance;
@@ -35,7 +32,7 @@ fn bfs(
 
         for (dx, dy) in [(0, 1), (1, 0), (-1, 0), (0, -1)] {
             let maybe_next_loc = (loc.0 as i32 + dx, loc.1 as i32 + dy);
-            if let Some(next_loc) = is_valid(&maybe_next_loc, &grid) {
+            if let Some(next_loc) = is_valid(&maybe_next_loc, grid) {
                 let next_height = grid[next_loc.0][next_loc.1] as i32;
                 if check(next_height, current_height as i32) {
                     queue.push_back((next_loc, distance + 1));
@@ -77,36 +74,4 @@ pub fn run() {
         "Day 12, part 2 {}",
         bfs(end, 'a', &grid, Box::new(|next, cur| cur - next <= 1))
     );
-
-    // let mut queue = VecDeque::new();
-    // let mut visited: HashSet<(usize, usize)> = HashSet::new();
-    // queue.push_back((start, 0));
-    // while let Some((loc, distance)) = queue.pop_front() {
-    //     if visited.contains(&loc) {
-    //         continue;
-    //     }
-    //     visited.insert(loc.clone());
-    //     dbg!(&loc);
-
-    //     if loc == end {
-    //         println!("Day 12, part 1 {}", distance);
-    //         return;
-
-    //     }
-
-    //     let current_height = grid[loc.0][loc.1] as i32;
-    //     for (dx, dy) in [(0, 1), (1, 0), (-1, 0), (0, -1)] {
-    //         let maybe_next_loc = (loc.0 as i32 + dx, loc.1 as i32 + dy);
-    //         if let Some(next_loc) = is_valid(&maybe_next_loc, &grid) {
-    //             let next_height = grid[next_loc.0][next_loc.1] as i32;
-    //             dbg!("valid loc");
-    //             dbg!(next_height, current_height);
-    //             if next_height - current_height <= 1 {
-    //                 queue.push_back((next_loc, distance + 1));
-    //             }
-    //         }
-    //     }
-    // }
-
-    // println!("Day 12, part 1 {}", distance[end.0][end.1]);
 }
