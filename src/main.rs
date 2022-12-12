@@ -9,5 +9,6 @@ fn main() {
     // aoc::day8::run();
     // aoc::day9::run();
     // aoc::day10::run();
-    aoc::day11::run();
+    // aoc::day11::run();
+    aoc::day12::run();
 }
