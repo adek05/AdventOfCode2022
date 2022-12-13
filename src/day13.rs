@@ -7,6 +7,40 @@ enum Value {
     Number(i32),
     List(Vec<Value>),
 }
+impl PartialOrd for Value {
+    fn partial_cmp(&self, b: &Value) -> Option<Ordering> {
+        Some(self.cmp(b))
+    }
+}
+
+impl Ord for Value {
+    fn cmp(&self, b: &Value) -> Ordering {
+        match (self, b) {
+            (Value::Number(a_number), Value::Number(b_number)) => a_number.cmp(b_number),
+            (Value::List(a_list), Value::List(b_list)) => {
+                for i in 0..a_list.len() {
+                    if let Some(a_elem) = a_list.get(i) {
+                        if let Some(b_elem) = b_list.get(i) {
+                            let cmp_res = a_elem.cmp(b_elem);
+                            if cmp_res == Ordering::Equal {
+                                continue;
+                            } else {
+                                return cmp_res;
+                            }
+                        } else {
+                            return Ordering::Greater;
+                        }
+                    } else {
+                        return a_list.len().cmp(&b_list.len());
+                    }
+                }
+                a_list.len().cmp(&b_list.len())
+            }
+            (a @ Value::Number(_), b) => Value::List(vec![a.clone()]).cmp(b),
+            (a, b @ Value::Number(_)) => a.cmp(&Value::List(vec![b.clone()])),
+        }
+    }
+}
 
 fn parse_number(it: &mut Peekable<Chars>) -> Value {
     let mut number_input = String::new();
@@ -52,33 +86,6 @@ fn parse_value(it: &mut Peekable<Chars>) -> Value {
     }
 }
 
-fn compare(a: &Value, b: &Value) -> Ordering {
-    match (a, b) {
-        (Value::Number(a_number), Value::Number(b_number)) => a_number.cmp(b_number),
-        (Value::List(a_list), Value::List(b_list)) => {
-            for i in 0..a_list.len() {
-                if let Some(a_elem) = a_list.get(i) {
-                    if let Some(b_elem) = b_list.get(i) {
-                        let cmp_res = compare(a_elem, b_elem);
-                        if cmp_res == Ordering::Equal {
-                            continue;
-                        } else {
-                            return cmp_res;
-                        }
-                    } else {
-                        return Ordering::Greater;
-                    }
-                } else {
-                    return a_list.len().cmp(&b_list.len());
-                }
-            }
-            a_list.len().cmp(&b_list.len())
-        }
-        (a @ Value::Number(_), b) => compare(&Value::List(vec![a.clone()]), b),
-        (a, b @ Value::Number(_)) => compare(a, &Value::List(vec![b.clone()])),
-    }
-}
-
 pub fn run() {
     let lines = read_lines("in/day13.in").unwrap();
 
@@ -93,7 +100,7 @@ pub fn run() {
         all_packets.push(first.clone());
         all_packets.push(second.clone());
 
-        if compare(&first, &second) == Ordering::Less {
+        if first < second {
             res += idx;
         }
         idx += 1;
@@ -105,10 +112,10 @@ pub fn run() {
     all_packets.push(divider_1.clone());
     all_packets.push(divider_2.clone());
 
-    all_packets.sort_by(compare);
+    all_packets.sort();
 
     println!(
-        "Day 13, part 1 {}",
+        "Day 13, part 2 {}",
         (all_packets.iter().position(|x| x == &divider_1).unwrap() + 1)
             * (all_packets.iter().position(|x| x == &divider_2).unwrap() + 1)
     );
