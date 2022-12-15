@@ -2,9 +2,9 @@ use crate::utils::read_lines;
 use std::collections::HashSet;
 
 fn next_sand_point(sand_loc: (i32, i32), cave: &HashSet<(i32, i32)>) -> Option<(i32, i32)> {
-    let down = (sand_loc.0, sand_loc.1+1);
-    let left = (sand_loc.0-1, sand_loc.1+1);
-    let right = (sand_loc.0+1, sand_loc.1+1);
+    let down = (sand_loc.0, sand_loc.1 + 1);
+    let left = (sand_loc.0 - 1, sand_loc.1 + 1);
+    let right = (sand_loc.0 + 1, sand_loc.1 + 1);
     if !cave.contains(&down) {
         return Some(down);
     }
