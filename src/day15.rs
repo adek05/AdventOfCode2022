@@ -94,9 +94,9 @@ pub fn run() {
             .iter()
             .filter_map(|range| intersect(range, &(0, 4_000_000)))
             .collect();
-        if intersected.iter().position(|r| r == &(0, 4_000_000)) == None {
+        if intersected.iter().any(|r| r == &(0, 4_000_000)) {
             for x in 0..=4_000_000 {
-                if intersected.iter().position(|r| r.0 <= x && x <= r.1) == None {
+                if intersected.iter().any(|r| r.0 <= x && x <= r.1) {
                     println!("Day 15, part 2: {}", x as i64 * 4_000_000 + y as i64);
                     return;
                 }
