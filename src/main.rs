@@ -14,5 +14,6 @@ fn main() {
     // aoc::day13::run();
     // aoc::day14::run();
     // aoc::day15::run();
-    aoc::day16::run();
+    // aoc::day16::run();
+    aoc::day17::run();
 }
