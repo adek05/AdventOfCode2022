@@ -41,9 +41,18 @@ pub fn run() {
     println!("Day 18, part 1: {}", surface_area);
 
     let mut outer_surface_area = 0;
-    let xs = (cubes.iter().map(|c| c.0).min().unwrap() - 2, cubes.iter().map(|c| c.0).max().unwrap() + 2);
-    let ys = (cubes.iter().map(|c| c.1).min().unwrap() - 2, cubes.iter().map(|c| c.1).max().unwrap() + 2);
-    let zs = (cubes.iter().map(|c| c.2).min().unwrap() - 2, cubes.iter().map(|c| c.2).max().unwrap() + 2);
+    let xs = (
+        cubes.iter().map(|c| c.0).min().unwrap() - 2,
+        cubes.iter().map(|c| c.0).max().unwrap() + 2,
+    );
+    let ys = (
+        cubes.iter().map(|c| c.1).min().unwrap() - 2,
+        cubes.iter().map(|c| c.1).max().unwrap() + 2,
+    );
+    let zs = (
+        cubes.iter().map(|c| c.2).min().unwrap() - 2,
+        cubes.iter().map(|c| c.2).max().unwrap() + 2,
+    );
     let mut visited: HashSet<Cube> = HashSet::new();
     let mut q: VecDeque<Cube> = VecDeque::new();
     q.push_back((xs.0, ys.0, zs.0));
@@ -63,5 +72,4 @@ pub fn run() {
         }
     }
     println!("Day 18, part 2: {}", outer_surface_area);
-
 }
