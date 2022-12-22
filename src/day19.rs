@@ -17,10 +17,8 @@ struct Robot {
 }
 
 struct Blueprint {
-    ore_robot: HashMap<Resource, i32>,
-    clay_robot: HashMap<Resource, i32>,
-    obsidian_robot: HashMap<Resource, i32>,
-    geode_robot: HashMap<Resource, i32>,
+    id: usize,
+    robot_cost: HashMap<Resource, HashMap<Resource, i32>>
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -83,13 +81,20 @@ fn mine(industry: &Industry) -> Industry {
     }
 }
 
+fn should_prune(industry: &Industry, b: &Blueprint, r: &Resource) -> bool {
+    if r == &Resource::Geode {
+        return false;
+    }
+    b.robot_cost.iter().map(|(_, cost)| cost.get(r).unwrap_or(&0)).max().unwrap() <= industry.robots.get(r).unwrap()
+}
+
 fn simulate(
     industry: Industry,
     blueprint: &Blueprint,
     time: i32,
-    cache: &mut HashMap<Industry, i32>,
+    cache: &mut HashMap<(Industry, i32), i32>,
 ) -> i32 {
-    if let Some(res) = cache.get(&industry) {
+    if let Some(res) = cache.get(&(industry.clone(), time)) {
         return *res;
     }
     assert!(industry.robots.len() < 31);
@@ -100,54 +105,38 @@ fn simulate(
 
     let mut scores = vec![];
 
-    if can_build(&industry, &blueprint.ore_robot) {
-        if industry.robots.get(&Resource::Ore).unwrap() < &10 {
-            let industry_tmp = build(&mine(&industry), Resource::Ore, &blueprint.ore_robot);
+    for robot_type in [Resource::Ore, Resource::Clay, Resource::Obsidian, Resource::Geode] {
+        let robot_cost = &blueprint.robot_cost[&robot_type];
+        if can_build(&industry, &robot_cost) && !should_prune(&industry, blueprint, &robot_type) {
+            let industry_tmp = build(&mine(&industry), robot_type, &blueprint.robot_cost.get(&robot_type).unwrap());
             scores.push(simulate(industry_tmp, blueprint, time - 1, cache));
         }
-    }
-    if can_build(&industry, &blueprint.clay_robot) {
-        if industry.robots.get(&Resource::Clay).unwrap() < &10 {
-            let industry_tmp = build(&mine(&industry), Resource::Clay, &blueprint.clay_robot);
-            scores.push(simulate(industry_tmp, blueprint, time - 1, cache));
-        }
-    }
-    if can_build(&industry, &blueprint.obsidian_robot) {
-        if industry.robots.get(&Resource::Obsidian).unwrap() < &10 {
-            let industry_tmp = build(
-                &mine(&industry),
-                Resource::Obsidian,
-                &blueprint.obsidian_robot,
-            );
-            scores.push(simulate(industry_tmp, blueprint, time - 1, cache));
-        }
-    }
-    if can_build(&industry, &blueprint.geode_robot) {
-        let industry_tmp = build(&mine(&industry), Resource::Geode, &blueprint.geode_robot);
-        scores.push(simulate(industry_tmp, blueprint, time - 1, cache));
     }
     scores.push(simulate(mine(&industry), blueprint, time - 1, cache));
 
     let best = *scores.iter().max().unwrap();
-    cache.insert(industry.clone(), best);
+    cache.insert((industry.clone(), time), best);
 
     best
 }
 
 pub fn run() {
-    let lines = read_lines("in/day19small.in").unwrap();
+    let lines = read_lines("in/day19.in").unwrap();
 
     let mut blueprints: Vec<Blueprint> = Vec::new();
 
-    for line in lines {
+    for (id, line) in lines.enumerate() {
         let l = line.unwrap();
         blueprints.push(scan!(&l;
-            ("Blueprint ", let _id: u32, ": Each ore robot costs ", let ore_ore_cost: i32, "ore. Each clay robot costs ", let clay_ore_cost: i32, "ore. Each obsidian robot costs ", let obsidian_ore_cost: i32, " ore and ", let Obsidian_clay_cost: i32, "clay. Each geode robot costs ", let geode_ore_cost: i32, "ore and ", let geode_obisdian_cost: i32, " obsidian.") => {
+            ("Blueprint ", let _id: u32, ": Each ore robot costs ", let ore_ore_cost: i32, "ore. Each clay robot costs ", let clay_ore_cost: i32, "ore. Each obsidian robot costs ", let obsidian_ore_cost: i32, " ore and ", let obsidian_clay_cost: i32, "clay. Each geode robot costs ", let geode_ore_cost: i32, "ore and ", let geode_obisdian_cost: i32, " obsidian.") => {
                 Blueprint {
-                    ore_robot: HashMap::from_iter([(Resource::Ore, ore_ore_cost)]),
-                    clay_robot: HashMap::from_iter([(Resource::Ore, clay_ore_cost)]),
-                    obsidian_robot: HashMap::from_iter([(Resource::Ore, obsidian_ore_cost), (Resource::Clay, Obsidian_clay_cost)]),
-                    geode_robot: HashMap::from_iter([(Resource::Ore, geode_ore_cost), (Resource::Obsidian, geode_obisdian_cost)]),
+                    id: id+1,
+                    robot_cost: HashMap::from_iter([
+                        (Resource::Ore, HashMap::from_iter([(Resource::Ore, ore_ore_cost)])),
+                    (Resource::Clay, HashMap::from_iter([(Resource::Ore, clay_ore_cost)])),
+                    (Resource::Obsidian, HashMap::from_iter([(Resource::Ore, obsidian_ore_cost), (Resource::Clay, obsidian_clay_cost)])),
+                    (Resource::Geode, HashMap::from_iter([(Resource::Ore, geode_ore_cost), (Resource::Obsidian, geode_obisdian_cost)])),
+                    ])
                 }
             },
         ).unwrap());
@@ -167,11 +156,16 @@ pub fn run() {
             (Resource::Geode, 0),
         ]),
     };
-    for blueprint in &blueprints {
-        let mut lookup: HashMap<Industry, i32> = HashMap::new();
-        println!(
-            "{}",
-            simulate(start_industry.clone(), &blueprint, 21, &mut lookup)
-        );
-    }
+
+    println!(
+        "Day 19, part 1: {}",
+        blueprints
+            .iter()
+            .enumerate()
+            .map(|(idx, blueprint)| {
+                let mut lookup: HashMap<(Industry, i32), i32> = HashMap::new();
+                simulate(start_industry.clone(), &blueprint, 24, &mut lookup) * blueprint.id as i32
+            })
+            .sum::<i32>()
+    );
 }
