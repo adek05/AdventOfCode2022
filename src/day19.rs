@@ -1,6 +1,7 @@
 use crate::utils::read_lines;
 
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 
 #[derive(Copy, Clone, Debug, Eq, Hash, PartialEq)]
@@ -18,7 +19,18 @@ struct Robot {
 
 struct Blueprint {
     id: usize,
-    robot_cost: HashMap<Resource, HashMap<Resource, i32>>
+    robot_cost: HashMap<Resource, HashMap<Resource, i32>>,
+}
+
+impl Blueprint {
+    fn get_max(&self, r: &Resource) -> i32 {
+        *self
+            .robot_cost
+            .iter()
+            .map(|(_, cost)| cost.get(r).unwrap_or(&0))
+            .max()
+            .unwrap()
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -69,10 +81,18 @@ fn can_build(industry: &Industry, cost: &HashMap<Resource, i32>) -> bool {
     true
 }
 
-fn mine(industry: &Industry) -> Industry {
+fn mine(industry: &Industry, blueprint: &Blueprint) -> Industry {
     let mut resources = industry.resources.clone();
     for (resource, count) in &industry.robots {
-        resources.entry(*resource).and_modify(|x| *x += count);
+        resources.entry(*resource).and_modify(|x| {
+            *x += count;
+        });
+        //     if count >= &blueprint.get_max(resource) {
+        //         *x = blueprint.get_max(resource);
+        //     } else {
+        //         *x += count;
+        //     }
+        // });
     }
 
     Industry {
@@ -85,7 +105,12 @@ fn should_prune(industry: &Industry, b: &Blueprint, r: &Resource) -> bool {
     if r == &Resource::Geode {
         return false;
     }
-    b.robot_cost.iter().map(|(_, cost)| cost.get(r).unwrap_or(&0)).max().unwrap() <= industry.robots.get(r).unwrap()
+    b.robot_cost
+        .iter()
+        .map(|(_, cost)| cost.get(r).unwrap_or(&0))
+        .max()
+        .unwrap()
+        <= industry.robots.get(r).unwrap()
 }
 
 fn simulate(
@@ -93,11 +118,12 @@ fn simulate(
     blueprint: &Blueprint,
     time: i32,
     cache: &mut HashMap<(Industry, i32), i32>,
+    skipped: HashSet<Resource>,
 ) -> i32 {
-    if let Some(res) = cache.get(&(industry.clone(), time)) {
-        return *res;
-    }
-    assert!(industry.robots.len() < 31);
+    // if let Some(res) = cache.get(&(industry.clone(), time)) {
+    //     return *res;
+    // }
+    // assert!(industry.robots.len() < 31);
     if time == 0 {
         let ret = *industry.resources.get(&Resource::Geode).unwrap();
         return ret;
@@ -105,17 +131,47 @@ fn simulate(
 
     let mut scores = vec![];
 
-    for robot_type in [Resource::Ore, Resource::Clay, Resource::Obsidian, Resource::Geode] {
+    let mut new_skipped: HashSet<Resource> = HashSet::new();
+    for robot_type in [
+        Resource::Ore,
+        Resource::Clay,
+        Resource::Obsidian,
+        Resource::Geode,
+    ] {
+        if skipped.contains(&robot_type) {
+            continue;
+        }
         let robot_cost = &blueprint.robot_cost[&robot_type];
-        if can_build(&industry, &robot_cost) && !should_prune(&industry, blueprint, &robot_type) {
-            let industry_tmp = build(&mine(&industry), robot_type, &blueprint.robot_cost.get(&robot_type).unwrap());
-            scores.push(simulate(industry_tmp, blueprint, time - 1, cache));
+        if can_build(&industry, &robot_cost) {
+            new_skipped.insert(robot_type);
+            if !should_prune(&industry, blueprint, &robot_type) {
+                let industry_tmp = build(
+                    &mine(&industry, &blueprint),
+                    robot_type,
+                    &blueprint.robot_cost.get(&robot_type).unwrap(),
+                );
+                scores.push(simulate(
+                    industry_tmp,
+                    blueprint,
+                    time - 1,
+                    cache,
+                    HashSet::new(),
+                ));
+            }
         }
     }
-    scores.push(simulate(mine(&industry), blueprint, time - 1, cache));
+    scores.push(simulate(
+        mine(&industry, &blueprint),
+        blueprint,
+        time - 1,
+        cache,
+        new_skipped,
+    ));
 
     let best = *scores.iter().max().unwrap();
-    cache.insert((industry.clone(), time), best);
+    // if time > 6 {
+    //     cache.insert((industry.clone(), time), best);
+    // }
 
     best
 }
@@ -157,14 +213,34 @@ pub fn run() {
         ]),
     };
 
+    // println!(
+    //     "Day 19, part 1: {}",
+    //     blueprints
+    //         .iter()
+    //         .enumerate()
+    //         .map(|(idx, blueprint)| {
+    //             let mut lookup: HashMap<(Industry, i32), i32> = HashMap::new();
+    //             dbg!(simulate(start_industry.clone(), &blueprint, 24, &mut lookup, HashSet::new()) * blueprint.id as i32)
+    //         })
+    //         .sum::<i32>()
+    // );
     println!(
-        "Day 19, part 1: {}",
+        "Day 19, part 2: {}",
         blueprints
             .iter()
             .enumerate()
+            .take(3)
             .map(|(idx, blueprint)| {
                 let mut lookup: HashMap<(Industry, i32), i32> = HashMap::new();
-                simulate(start_industry.clone(), &blueprint, 24, &mut lookup) * blueprint.id as i32
+                dbg!(
+                    simulate(
+                        start_industry.clone(),
+                        &blueprint,
+                        32,
+                        &mut lookup,
+                        HashSet::new()
+                    ) * blueprint.id as i32
+                )
             })
             .sum::<i32>()
     );
