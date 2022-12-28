@@ -41,7 +41,11 @@ pub fn run() {
         )
     }
     {
-        let mut mixed: Vec<(usize, i64)> = numbers.iter().cloned().map(|x| (x.0, x.1 * 811589153)).collect();
+        let mut mixed: Vec<(usize, i64)> = numbers
+            .iter()
+            .cloned()
+            .map(|x| (x.0, x.1 * 811589153))
+            .collect();
         for _ in 0..10 {
             mixed = mix(mixed);
         }
