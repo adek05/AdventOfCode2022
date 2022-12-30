@@ -214,22 +214,27 @@ pub fn run() {
 
         if let Expression::Cmp(e1, e2) = operations.get(&"root".to_string()).unwrap() {
             if e1.is_number() && to_substitute.is_empty() {
-                println!("Day 21, part 2: {}", backpropagate(
-                    &operations,
-                    e1.get_number(),
-                    &get_expression(&operations, e2)
-                ));
+                println!(
+                    "Day 21, part 2: {}",
+                    backpropagate(
+                        &operations,
+                        e1.get_number(),
+                        &get_expression(&operations, e2)
+                    )
+                );
                 return;
             }
             if e2.is_number() && to_substitute.is_empty() {
-                println!("Day 21, part 2: {}", backpropagate(
-                    &operations,
-                    e2.get_number(),
-                    &get_expression(&operations, e1)
-                ));
+                println!(
+                    "Day 21, part 2: {}",
+                    backpropagate(
+                        &operations,
+                        e2.get_number(),
+                        &get_expression(&operations, e1)
+                    )
+                );
                 return;
             }
         }
     }
-
 }

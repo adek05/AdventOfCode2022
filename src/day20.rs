@@ -7,13 +7,11 @@ fn idx(number: i64, offset: usize, list: &Vec<(usize, i64)>) -> i64 {
 
 fn mix(mut numbers: Vec<(usize, i64)>) -> Vec<(usize, i64)> {
     for i in 0..numbers.len() {
-        // dbg!(&numbers);
         let pos = numbers.iter().position(|x| x.0 == i).unwrap();
         let number = numbers[pos];
 
         let modulo = (numbers.len() - 1) as i64;
         let new_pos = ((1 + pos as i64 - 1 + (number.1 % modulo) + modulo) % modulo) as usize;
-        assert!(new_pos >= 0);
         let mut new: Vec<(usize, i64)> = vec![];
         new.extend(&numbers[0..pos]);
         new.extend(&numbers[pos + 1..]);
@@ -24,12 +22,12 @@ fn mix(mut numbers: Vec<(usize, i64)>) -> Vec<(usize, i64)> {
         new_numbers.extend(&new[new_pos..]);
         numbers = new_numbers;
     }
-    return numbers;
+    numbers
 }
 
 pub fn run() {
     let lines = read_lines("in/day20.in").unwrap();
-    let mut numbers: Vec<(usize, i64)> = lines
+    let numbers: Vec<(usize, i64)> = lines
         .enumerate()
         .map(|(idx, line)| (idx, line.unwrap().parse::<i64>().unwrap()))
         .collect();

@@ -81,7 +81,7 @@ fn can_build(industry: &Industry, cost: &HashMap<Resource, i32>) -> bool {
     true
 }
 
-fn mine(industry: &Industry, blueprint: &Blueprint) -> Industry {
+fn mine(industry: &Industry, _blueprint: &Blueprint) -> Industry {
     let mut resources = industry.resources.clone();
     for (resource, count) in &industry.robots {
         resources.entry(*resource).and_modify(|x| {
@@ -230,7 +230,7 @@ pub fn run() {
             .iter()
             .enumerate()
             .take(3)
-            .map(|(idx, blueprint)| {
+            .map(|(_idx, blueprint)| {
                 let mut lookup: HashMap<(Industry, i32), i32> = HashMap::new();
                 dbg!(
                     simulate(

@@ -63,7 +63,7 @@ pub fn run() {
         if visited.contains(&next) {
             continue;
         }
-        visited.insert(next.clone());
+        visited.insert(next);
         if !is_in(&next, &xs, &ys, &zs) {
             continue;
         }

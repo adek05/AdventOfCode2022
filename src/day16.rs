@@ -46,12 +46,11 @@ pub fn part1(
     recurse: bool,
     memory: &mut HashMap<String, i32>,
 ) {
-    if open.iter().position(|x| x == valve).is_some() && valve != &"AA".to_string() {
+    if open.iter().any(|x| x == valve) && valve != &"AA".to_string() {
         return;
     }
     let new_score = score
-        + std::cmp::max(time_left - (if valve != "AA" { 1 } else { 0 }), 0)
-            * pressures.get(valve).unwrap();
+        + std::cmp::max(time_left - i32::from(valve != "AA"), 0) * pressures.get(valve).unwrap();
 
     let mut delta = 0;
     open.insert(valve.clone());
@@ -64,9 +63,9 @@ pub fn part1(
             delta = run_part1(
                 26,
                 &mut new_open,
-                &tunnels,
-                &pressures,
-                &distances,
+                tunnels,
+                pressures,
+                distances,
                 false,
                 memory,
             );
@@ -82,7 +81,7 @@ pub fn part1(
 
     for next_valve in tunnels.keys() {
         if let Some(next_valve_dist) = distances.get(&(valve.clone(), next_valve.clone())) {
-            let new_time_left = time_left - (if valve != "AA" { 1 } else { 0 }) - next_valve_dist;
+            let new_time_left = time_left - i32::from(valve != "AA") - next_valve_dist;
             part1(
                 max,
                 next_valve,
@@ -116,9 +115,9 @@ pub fn run_part1(
         0,
         visited,
         time_left,
-        &tunnels,
-        &pressures,
-        &distances,
+        tunnels,
+        pressures,
+        distances,
         recurse,
         memory,
     );
@@ -139,13 +138,13 @@ pub fn run() {
                 valve_pressure.insert(source_valve.clone(), pressure);
                 tunnels.entry(source_valve.clone()).and_modify(|t|
                     t.extend(target_valves.clone())
-                ).or_insert(target_valves.clone());
+                ).or_insert_with(|| target_valves.clone());
             },
             ("Valve ", let source_valve: Word<String>, " has flow rate=", let pressure: i32, "; tunnel leads to valve ", [let target_valves: Word<String>],+: Vec<String>) => {
                 valve_pressure.insert(source_valve.clone(), pressure);
                 tunnels.entry(source_valve.clone()).and_modify(|t|
                     t.extend(target_valves.clone())
-                ).or_insert(target_valves.clone());
+                ).or_insert_with(|| target_valves.clone());
             }
         ).unwrap();
     }

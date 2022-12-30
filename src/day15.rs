@@ -43,7 +43,7 @@ fn intersect(r1: &Range, r2: &Range) -> Option<Range> {
 }
 
 fn sum(r1: &Range, r2: &Range) -> Vec<Range> {
-    if intersect(r1, r2) == None {
+    if intersect(r1, r2).is_none() {
         return vec![*r1, *r2];
     }
     vec![(r1.0, std::cmp::max(r1.1, r2.1))]
