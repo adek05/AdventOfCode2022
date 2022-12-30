@@ -17,10 +17,7 @@ enum Expression {
 
 impl Expression {
     pub fn is_number(&self) -> bool {
-        match self {
-            Expression::Literal(_) => true,
-            _ => false,
-        }
+        matches!(self, Expression::Literal(_))
     }
 
     pub fn get_number(&self) -> i64 {
@@ -84,28 +81,70 @@ impl Expression {
             Expression::Human => Expression::Human,
         }
     }
+}
 
-    pub fn backpropagate(&self, target_value: i64) -> i64 {
-        match self {
-            Expression::Human => target_value,
-            Expression::Add(x, e) if x.is_number() => e.backpropagate(target_value - x.get_number()),
-            Expression::Add(e, x) if x.is_number() => e.backpropagate(target_value - x.get_number()),
-            Expression::Sub(x, e) if x.is_number()  => e.backpropagate(x.get_number() - target_value),
-            Expression::Sub(e, x) if x.is_number() => e.backpropagate(target_value + x.get_number()),
-            Expression::Mul(x, e) if x.is_number()  => e.backpropagate(target_value / x.get_number()),
-            Expression::Mul(e, x) if x.is_number() => e.backpropagate(target_value / x.get_number()),
-            // t = x/e => e = x/t
-            Expression::Div(x, e) if x.is_number()  => e.backpropagate(x.get_number() / target_value),
-            // t = e/x => e = t*x
-            Expression::Div(e, x) if x.is_number() => e.backpropagate(x.get_number() * target_value),
-            e => panic!("{:?}", e),
+fn get_expression(operations: &HashMap<String, Expression>, variable: &Expression) -> Expression {
+    if let Expression::Variable(var_name) = variable {
+        return operations.get(var_name).unwrap().clone();
+    }
+    panic!("{:?} is not a variable", variable);
+}
 
-        }
+fn backpropagate(
+    operations: &HashMap<String, Expression>,
+    target_value: i64,
+    e: &Expression,
+) -> i64 {
+    match e {
+        Expression::Human => target_value,
+        Expression::Add(x, e) if x.is_number() => backpropagate(
+            operations,
+            target_value - x.get_number(),
+            &get_expression(operations, e),
+        ),
+        Expression::Add(e, x) if x.is_number() => backpropagate(
+            operations,
+            target_value - x.get_number(),
+            &get_expression(operations, e),
+        ),
+        Expression::Sub(x, e) if x.is_number() => backpropagate(
+            operations,
+            x.get_number() - target_value,
+            &get_expression(operations, e),
+        ),
+        Expression::Sub(e, x) if x.is_number() => backpropagate(
+            operations,
+            target_value + x.get_number(),
+            &get_expression(operations, e),
+        ),
+        Expression::Mul(x, e) if x.is_number() => backpropagate(
+            operations,
+            target_value / x.get_number(),
+            &get_expression(operations, e),
+        ),
+        Expression::Mul(e, x) if x.is_number() => backpropagate(
+            operations,
+            target_value / x.get_number(),
+            &get_expression(operations, e),
+        ),
+        // t = x/e => e = x/t
+        Expression::Div(x, e) if x.is_number() => backpropagate(
+            operations,
+            x.get_number() / target_value,
+            &get_expression(operations, e),
+        ),
+        // t = e/x => e = t*x
+        Expression::Div(e, x) if x.is_number() => backpropagate(
+            operations,
+            x.get_number() * target_value,
+            &get_expression(operations, e),
+        ),
+        e => panic!("{:?}", e),
     }
 }
 
 pub fn run() {
-    let lines = read_lines("in/day21small.in").unwrap();
+    let lines = read_lines("in/day21.in").unwrap();
 
     let mut operations: HashMap<String, Expression> = HashMap::new();
     let mut to_substitute: Vec<(String, i64)> = vec![];
@@ -124,7 +163,7 @@ pub fn run() {
             },
             ("humn: ", let _: i64) => {
                 operations.insert(
-                "hmn".to_string(),
+                "humn".to_string(),
                 Expression::Human,
                 );
             },
@@ -153,34 +192,44 @@ pub fn run() {
 
     while !operations.get(&"root".to_string()).unwrap().is_number() {
         for (var, val) in &to_substitute {
-            operations = operations.iter().map(|(v, e)| (v.clone(), e.substitute(&var, *val))).collect();
+            operations = operations
+                .iter()
+                .map(|(v, e)| (v.clone(), e.substitute(var, *val)))
+                .collect();
         }
         to_substitute = vec![];
 
-        operations = operations.iter().map(|(variable, e)| {
-            if e.can_eval() && !e.is_number() {
-                let res = e.eval();
-                to_substitute.push((variable.clone(), res));
-                return (variable.clone(), Expression::Literal(res));
-            } else {
-                return (variable.clone(), e.clone());
-            }
-        }).collect();
-        dbg!(
-            operations.get(&"root".to_string()).unwrap()
-        );
+        operations = operations
+            .iter()
+            .map(|(variable, e)| {
+                if e.can_eval() && !e.is_number() {
+                    let res = e.eval();
+                    to_substitute.push((variable.clone(), res));
+                    (variable.clone(), Expression::Literal(res))
+                } else {
+                    (variable.clone(), e.clone())
+                }
+            })
+            .collect();
 
         if let Expression::Cmp(e1, e2) = operations.get(&"root".to_string()).unwrap() {
             if e1.is_number() && to_substitute.is_empty() {
-                dbg!(e2.backpropagate(e1.get_number()));
+                println!("Day 21, part 2: {}", backpropagate(
+                    &operations,
+                    e1.get_number(),
+                    &get_expression(&operations, e2)
+                ));
+                return;
             }
             if e2.is_number() && to_substitute.is_empty() {
-                dbg!(e1.backpropagate(e2.get_number()));
+                println!("Day 21, part 2: {}", backpropagate(
+                    &operations,
+                    e2.get_number(),
+                    &get_expression(&operations, e1)
+                ));
+                return;
             }
         }
     }
 
-    // if let Expression::Literal(v) = operations.get(&"root".to_string()).unwrap() {
-    //     println!("Day 21, part 1: {}", v);
-    // }
 }
