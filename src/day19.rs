@@ -2,7 +2,7 @@ use crate::utils::read_lines;
 
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
 
 #[derive(Copy, Clone, Debug, Eq, Hash, PartialEq)]
 enum Resource {
@@ -22,38 +22,10 @@ struct Blueprint {
     robot_cost: HashMap<Resource, HashMap<Resource, i32>>,
 }
 
-impl Blueprint {
-    fn get_max(&self, r: &Resource) -> i32 {
-        *self
-            .robot_cost
-            .iter()
-            .map(|(_, cost)| cost.get(r).unwrap_or(&0))
-            .max()
-            .unwrap()
-    }
-}
-
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct Industry {
     robots: HashMap<Resource, i32>,
     resources: HashMap<Resource, i32>,
-}
-
-impl Hash for Industry {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        let x = format!(
-            "{}-{}-{}-{}-{}-{}-{}-{}",
-            self.robots.get(&Resource::Ore).unwrap(),
-            self.robots.get(&Resource::Clay).unwrap(),
-            self.robots.get(&Resource::Obsidian).unwrap(),
-            self.robots.get(&Resource::Geode).unwrap(),
-            self.resources.get(&Resource::Ore).unwrap(),
-            self.resources.get(&Resource::Clay).unwrap(),
-            self.resources.get(&Resource::Obsidian).unwrap(),
-            self.resources.get(&Resource::Geode).unwrap(),
-        );
-        x.hash(state);
-    }
 }
 
 fn build(industry: &Industry, r: Resource, cost: &HashMap<Resource, i32>) -> Industry {
@@ -70,8 +42,8 @@ fn build(industry: &Industry, r: Resource, cost: &HashMap<Resource, i32>) -> Ind
 
 fn can_build(industry: &Industry, cost: &HashMap<Resource, i32>) -> bool {
     for (r, amount) in cost {
-        if let Some(available_amount) = industry.resources.get(&r) {
-            if available_amount < &amount {
+        if let Some(available_amount) = industry.resources.get(r) {
+            if available_amount < amount {
                 return false;
             }
         } else {
@@ -87,12 +59,6 @@ fn mine(industry: &Industry, _blueprint: &Blueprint) -> Industry {
         resources.entry(*resource).and_modify(|x| {
             *x += count;
         });
-        //     if count >= &blueprint.get_max(resource) {
-        //         *x = blueprint.get_max(resource);
-        //     } else {
-        //         *x += count;
-        //     }
-        // });
     }
 
     Industry {
@@ -117,13 +83,8 @@ fn simulate(
     industry: Industry,
     blueprint: &Blueprint,
     time: i32,
-    cache: &mut HashMap<(Industry, i32), i32>,
     skipped: HashSet<Resource>,
 ) -> i32 {
-    // if let Some(res) = cache.get(&(industry.clone(), time)) {
-    //     return *res;
-    // }
-    // assert!(industry.robots.len() < 31);
     if time == 0 {
         let ret = *industry.resources.get(&Resource::Geode).unwrap();
         return ret;
@@ -131,7 +92,7 @@ fn simulate(
 
     let mut scores = vec![];
 
-    let mut new_skipped: HashSet<Resource> = HashSet::new();
+    let mut new_skipped: HashSet<Resource> = skipped.clone();
     for robot_type in [
         Resource::Ore,
         Resource::Clay,
@@ -142,38 +103,26 @@ fn simulate(
             continue;
         }
         let robot_cost = &blueprint.robot_cost[&robot_type];
-        if can_build(&industry, &robot_cost) {
+        if can_build(&industry, robot_cost) {
             new_skipped.insert(robot_type);
             if !should_prune(&industry, blueprint, &robot_type) {
                 let industry_tmp = build(
-                    &mine(&industry, &blueprint),
+                    &mine(&industry, blueprint),
                     robot_type,
-                    &blueprint.robot_cost.get(&robot_type).unwrap(),
+                    blueprint.robot_cost.get(&robot_type).unwrap(),
                 );
-                scores.push(simulate(
-                    industry_tmp,
-                    blueprint,
-                    time - 1,
-                    cache,
-                    HashSet::new(),
-                ));
+                scores.push(simulate(industry_tmp, blueprint, time - 1, HashSet::new()));
             }
         }
     }
     scores.push(simulate(
-        mine(&industry, &blueprint),
+        mine(&industry, blueprint),
         blueprint,
         time - 1,
-        cache,
         new_skipped,
     ));
 
-    let best = *scores.iter().max().unwrap();
-    // if time > 6 {
-    //     cache.insert((industry.clone(), time), best);
-    // }
-
-    best
+    *scores.iter().max().unwrap()
 }
 
 pub fn run() {
@@ -213,17 +162,17 @@ pub fn run() {
         ]),
     };
 
-    // println!(
-    //     "Day 19, part 1: {}",
-    //     blueprints
-    //         .iter()
-    //         .enumerate()
-    //         .map(|(idx, blueprint)| {
-    //             let mut lookup: HashMap<(Industry, i32), i32> = HashMap::new();
-    //             dbg!(simulate(start_industry.clone(), &blueprint, 24, &mut lookup, HashSet::new()) * blueprint.id as i32)
-    //         })
-    //         .sum::<i32>()
-    // );
+    println!(
+        "Day 19, part 1: {}",
+        blueprints
+            .iter()
+            .enumerate()
+            .map(|(_, blueprint)| {
+                simulate(start_industry.clone(), blueprint, 24, HashSet::new())
+                    * blueprint.id as i32
+            })
+            .sum::<i32>()
+    );
     println!(
         "Day 19, part 2: {}",
         blueprints
@@ -231,17 +180,14 @@ pub fn run() {
             .enumerate()
             .take(3)
             .map(|(_idx, blueprint)| {
-                let mut lookup: HashMap<(Industry, i32), i32> = HashMap::new();
-                dbg!(
-                    simulate(
-                        start_industry.clone(),
-                        &blueprint,
-                        32,
-                        &mut lookup,
-                        HashSet::new()
-                    ) * blueprint.id as i32
-                )
+                dbg!(simulate(
+                    start_industry.clone(),
+                    blueprint,
+                    32,
+                    HashSet::new()
+                ))
             })
-            .sum::<i32>()
+            .reduce(|x, y| x * y)
+            .unwrap()
     );
 }
